@@ -166,32 +166,23 @@ export default class MultiGrid extends PureComponent {
     this._maybeCalculateCachedStyles(null, this.props, null, this.state);
 
     if (deferredMeasurementCache) {
-      this._deferredMeasurementCacheBottomLeftGrid =
-        fixedRowCount > 0
-          ? new CellMeasurerCacheDecorator({
-              cellMeasurerCache: deferredMeasurementCache,
-              columnIndexOffset: 0,
-              rowIndexOffset: fixedRowCount
-            })
-          : deferredMeasurementCache;
+      this._deferredMeasurementCacheBottomLeftGrid = new CellMeasurerCacheDecorator({
+        cellMeasurerCache: deferredMeasurementCache,
+        columnIndexOffset: 0,
+        rowIndexOffset: () => this.props.fixedRowCount
+      });
 
-      this._deferredMeasurementCacheBottomRightGrid =
-        fixedColumnCount > 0 || fixedRowCount > 0
-          ? new CellMeasurerCacheDecorator({
-              cellMeasurerCache: deferredMeasurementCache,
-              columnIndexOffset: fixedColumnCount,
-              rowIndexOffset: fixedRowCount
-            })
-          : deferredMeasurementCache;
+      this._deferredMeasurementCacheBottomRightGrid = new CellMeasurerCacheDecorator({
+        cellMeasurerCache: deferredMeasurementCache,
+        columnIndexOffset: () => this.props.fixedColumnCount,
+        rowIndexOffset: () => this.props.fixedRowCount
+      });
 
-      this._deferredMeasurementCacheTopRightGrid =
-        fixedColumnCount > 0
-          ? new CellMeasurerCacheDecorator({
-              cellMeasurerCache: deferredMeasurementCache,
-              columnIndexOffset: fixedColumnCount,
-              rowIndexOffset: 0
-            })
-          : deferredMeasurementCache;
+      this._deferredMeasurementCacheTopRightGrid = new CellMeasurerCacheDecorator({
+        cellMeasurerCache: deferredMeasurementCache,
+        columnIndexOffset: () => this.props.fixedColumnCount,
+        rowIndexOffset: 0
+      });
     }
   }
 

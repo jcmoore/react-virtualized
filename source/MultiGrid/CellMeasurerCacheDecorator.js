@@ -3,8 +3,8 @@ import { CellMeasurerCache } from "../CellMeasurer";
 
 type CellMeasurerCacheDecoratorParams = {
   cellMeasurerCache: CellMeasurerCache,
-  columnIndexOffset: number,
-  rowIndexOffset: number
+  columnIndexOffset: number | (() => number),
+  rowIndexOffset: number | (() => number)
 };
 
 type IndexParam = {
@@ -17,7 +17,9 @@ type IndexParam = {
 export default class CellMeasurerCacheDecorator {
   _cellMeasurerCache: CellMeasurerCache;
   _columnIndexOffset: number;
+  _columnIndexOffsetGetter: ?() => number;
   _rowIndexOffset: number;
+  _rowIndexOffsetGetter: ?() => number;
 
   constructor(params: CellMeasurerCacheDecoratorParams = {}) {
     const {
@@ -27,14 +29,24 @@ export default class CellMeasurerCacheDecorator {
     } = params;
 
     this._cellMeasurerCache = cellMeasurerCache;
-    this._columnIndexOffset = columnIndexOffset;
-    this._rowIndexOffset = rowIndexOffset;
+    this._columnIndexOffset = typeof columnIndexOffset === "number" ? columnIndexOffset : 0;
+    this._columnIndexOffsetGetter = typeof columnIndexOffset === "function" ? columnIndexOffset : null;
+    this._rowIndexOffset = typeof rowIndexOffset === "number" ? rowIndexOffset : 0;
+    this._rowIndexOffsetGetter = typeof rowIndexOffset === "function" ? rowIndexOffset : null;
+  }
+
+  _getColumnOffset() {
+    return this._columnIndexOffsetGetter ? this._columnIndexOffsetGetter() : this._columnIndexOffset;
+  }
+
+  _getRowOffset() {
+    return this._rowIndexOffsetGetter ? this._rowIndexOffsetGetter() : this._rowIndexOffset;
   }
 
   clear(rowIndex: number, columnIndex: number): void {
     this._cellMeasurerCache.clear(
-      rowIndex + this._rowIndexOffset,
-      columnIndex + this._columnIndexOffset
+      rowIndex + this._getRowOffset(),
+      columnIndex + this._getColumnOffset()
     );
   }
 
@@ -44,7 +56,7 @@ export default class CellMeasurerCacheDecorator {
 
   columnWidth = ({ index }: IndexParam) => {
     this._cellMeasurerCache.columnWidth({
-      index: index + this._columnIndexOffset
+      index: index + this._getColumnOffset()
     });
   };
 
@@ -66,28 +78,28 @@ export default class CellMeasurerCacheDecorator {
 
   getHeight(rowIndex: number, columnIndex: ?number = 0): ?number {
     return this._cellMeasurerCache.getHeight(
-      rowIndex + this._rowIndexOffset,
-      columnIndex + this._columnIndexOffset
+      rowIndex + this._getRowOffset(),
+      columnIndex + this._getColumnOffset()
     );
   }
 
   getWidth(rowIndex: number, columnIndex: ?number = 0): ?number {
     return this._cellMeasurerCache.getWidth(
-      rowIndex + this._rowIndexOffset,
-      columnIndex + this._columnIndexOffset
+      rowIndex + this._getRowOffset(),
+      columnIndex + this._getColumnOffset()
     );
   }
 
   has(rowIndex: number, columnIndex: ?number = 0): boolean {
     return this._cellMeasurerCache.has(
-      rowIndex + this._rowIndexOffset,
-      columnIndex + this._columnIndexOffset
+      rowIndex + this._getRowOffset(),
+      columnIndex + this._getColumnOffset()
     );
   }
 
   rowHeight = ({ index }: IndexParam) => {
     this._cellMeasurerCache.rowHeight({
-      index: index + this._rowIndexOffset
+      index: index + this._getRowOffset()
     });
   };
 
@@ -98,8 +110,8 @@ export default class CellMeasurerCacheDecorator {
     height: number
   ): void {
     this._cellMeasurerCache.set(
-      rowIndex + this._rowIndexOffset,
-      columnIndex + this._columnIndexOffset,
+      rowIndex + this._getRowOffset(),
+      columnIndex + this._getColumnOffset(),
       (width: number),
       (height: number)
     );
